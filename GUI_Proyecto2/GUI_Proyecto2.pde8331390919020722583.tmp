@@ -1,0 +1,340 @@
+/**
+*  Serial communication
+**/
+// Se importa la libreria para la comunicacion serial con el puerto USART
+import processing.serial.*;
+Serial myPort;
+// Bloque de variables a utilizar 
+int out_data = -1;
+int in_data = -1;
+// Variables para la parte gráfica
+int rectX = 10;
+int rectY = 50;
+int rectSize = 70;
+int rec1 = 180;
+int rec2 = 180;
+int rpta1, rpta2;
+int val1 = 10;
+int val2 = 9;
+color rectColor11, rectColor12, rectColor13, rectColor14, rectColor15, rectColor16;
+color rectColor1, color1, color2;
+color rectHighlight, currentColor;
+boolean rectOver1 = false;
+boolean rectOver2 = false;
+boolean rectOver3 = false;
+boolean rectOver4 = false;
+boolean rectOver5 = false;
+boolean rectOver6 = false;
+boolean rectOver7 = false;
+boolean rectOver8 = false;
+boolean rectOver9 = false;
+boolean rectOver10 = false;
+boolean active = false;
+boolean garra = false;
+
+void setup(){
+  size(500,500);
+  rectColor11 = color(150,20,20);
+  rectColor12 = color(150,20,20);
+  rectColor13 = color(150,20,20);
+  rectColor14 = color(150,20,20);
+  rectColor15 = color(150,20,20);
+  rectColor16 = color(150,20,20);
+  
+  color1 = color(150,20,20);
+  color2 = color(20,150,20);
+  
+  rectColor1 = color(150,20,150);
+  rectHighlight = color(51);
+  currentColor = color(20,20,100);
+ 
+  //PFont myFont = createFont(PFont.list()[2], 14);
+  //textFont(myFont);
+  
+  printArray(Serial.list());
+  //String portName = Serial.list()[0];
+  //myPort = new Serial(this, portName, 2400);
+}
+
+void draw(){ 
+  update(mouseX, mouseY);
+  background(currentColor);
+// Texto de mensaje del proyecto
+  fill(255);
+  PFont myFont = loadFont("ArialMT-48.vlw");
+  textFont(myFont,17);
+  text("CONTROL BRAZO MECANICO", 10, 20);
+  text("PROYECTO 2 MICROCONTROLADORES", 10, 40);
+  text("CONTROL BRAZO",90,115);
+  text("CONTROL GARRA",340,115);
+  text("SERVO 1",150,370);
+  text("SERVO 2",330,370);
+  text("1",100,180);
+  text("2",100,270);
+  text("3",100,360);
+  text("4",100,450);
+  textFont(myFont,20);
+  text("Max de Leon - 13012",270,450);
+  text("Ricardo Franco - 13261", 270,480);
+// Creación de los botones con sus respectivos colores y medidas
+  fill(rectColor11);
+  stroke(255);
+  rect(rectX, rectY, rectSize, rectSize);
+  fill(rectColor12);
+  stroke(255);
+  rect(rectX, rectY+90, rectSize, rectSize);
+  fill(rectColor13);
+  stroke(255);
+  rect(rectX, rectY+180, rectSize, rectSize);
+  fill(rectColor14);
+  stroke(255);
+  rect(rectX, rectY+270, rectSize, rectSize);
+  fill(rectColor15);
+  stroke(255);
+  rect(rectX, rectY+360, rectSize, rectSize);
+  fill(rectColor16);
+  stroke(255);
+  rect(rectX+250, rectY, rectSize, rectSize);
+// Barras de los sliders con sus respectivos cuadrados adentro para trabajar
+  fill(rectColor1);
+  stroke(255);
+  rect(rectX+140, rectY+120, rectSize, rectSize);
+  fill(rectColor1);
+  stroke(255);
+  rect(rectX+140, rectY+220, rectSize, rectSize);
+  
+  fill(rectColor1);
+  stroke(255);
+  rect(rectX+320, rectY+120, rectSize, rectSize);
+  fill(rectColor1);
+  stroke(255);
+  rect(rectX+320, rectY+220, rectSize, rectSize);
+// Sección de cambio de estados
+  fill(255);
+  textFont(myFont,17);
+  text("GIRO",230,200);
+  text("DERECHA",230,230); 
+  text("GIRO",230,300);
+  text("IZQUIERDA",230,330); 
+  text("BRAZO",410,200); 
+  text("SUBE",410,230); 
+  text("BRAZO",410,300); 
+  text("BAJA",410,330); 
+  if(garra){
+    text("GARRA ON",340,95); 
+  }else{
+    text("GARRA OFF",340,95);  
+  }
+  if(active){
+    text("ADC ON",90,95); 
+  }else{
+    text("ADC OFF",90,95);  
+  }
+  
+}
+
+void update(int x, int y) {
+  if ( overRect(rectX, rectY, rectSize, rectSize) ) {
+    rectOver1 = true;
+    rectOver2 = false;
+    rectOver3 = false;
+    rectOver4 = false;
+    rectOver5 = false;
+    rectOver6 = false;
+  }
+  else if ( overRect(rectX, rectY+90, rectSize, rectSize) ) {
+      rectOver2 = true;
+      rectOver1 = false;
+      rectOver3 = false;
+      rectOver4 = false;
+      rectOver5 = false;
+      rectOver6 = false;
+  } 
+  else if ( overRect(rectX, rectY+180, rectSize, rectSize) ) {
+    rectOver3 = true;
+    rectOver2 = false;
+    rectOver1 = false;
+    rectOver4 = false;
+    rectOver5 = false;
+    rectOver6 = false;
+  } 
+  else if ( overRect(rectX, rectY+270, rectSize, rectSize) ) {
+    rectOver4 = true;
+    rectOver2 = false;
+    rectOver3 = false;
+    rectOver1 = false;
+    rectOver5 = false;
+    rectOver6 = false;
+  } 
+  else if ( overRect(rectX, rectY+360, rectSize, rectSize) ) {
+    rectOver5 = true;
+    rectOver2 = false;
+    rectOver3 = false;
+    rectOver4 = false;
+    rectOver1 = false;
+    rectOver6 = false;
+  } 
+  else if ( overRect(rectX+250, rectY, rectSize, rectSize) ) {
+    rectOver6 = true;
+    rectOver2 = false;
+    rectOver3 = false;
+    rectOver4 = false;
+    rectOver5 = false;
+    rectOver1 = false;
+    rectOver7 = false;
+    rectOver8 = false;
+    rectOver9 = false;
+    rectOver10 = false;
+  } 
+  else if ( overRect(rectX+150, rectY+120, rectSize, rectSize) ) {
+    rectOver7 = true;
+    rectOver8 = false;
+    rectOver9 = false;
+    rectOver10 = false;
+  } 
+  else if ( overRect(rectX+150, rectY+220, rectSize, rectSize) ) {
+    rectOver8 = true;
+    rectOver7 = false;
+    rectOver9 = false;
+    rectOver10 = false;
+  } 
+  else if ( overRect(rectX+330, rectY+120, rectSize, rectSize) ) {
+    rectOver9 = true;
+    rectOver8 = false;
+    rectOver7 = false;
+    rectOver10 = false;
+  } 
+  else if ( overRect(rectX+330, rectY+220, rectSize, rectSize) ) {
+    rectOver10 = true;
+    rectOver8 = false;
+    rectOver9 = false;
+    rectOver7 = false;
+  } else {
+    rectOver1 = rectOver2 = rectOver3 = rectOver4 = rectOver5 = rectOver6 = false;
+  }
+}
+
+void mousePressed() {
+  if (rectOver1) {
+    if(active==false){
+      active = true;
+      rectColor11 = color2;
+      rectColor12 = color1;
+      rectColor13 = color1;
+      rectColor14 = color1;
+      rectColor15 = color1;
+      //myPort.write(5);
+      println(5);
+    }else{
+      active = false;
+      rectColor11 = color1;
+      //myPort.write(5);
+      println(5);
+    }
+  }
+  if(active == false){
+    if(rectOver2){
+    rectColor12 = color2;
+    rectColor13 = color1;
+    rectColor14 = color1;
+    rectColor15 = color1;
+    //yPort.write(0);
+    //myPort.write(0);
+    //myPort.write(0);
+    }
+    if(rectOver3){
+      rectColor12 = color1;
+      rectColor13 = color2;
+      rectColor14 = color1;
+      rectColor15 = color1;
+      //myPort.write(1);
+      //myPort.write(1);
+      //myPort.write(1);
+    }
+    if(rectOver4){
+      rectColor12 = color1;
+      rectColor13 = color1;
+      rectColor14 = color2;
+      rectColor15 = color1;
+      //myPort.write(2);
+      //myPort.write(2);
+      //myPort.write(2);
+    }
+    if(rectOver5){
+      rectColor12 = color1;
+      rectColor13 = color1;
+      rectColor14 = color1;
+      rectColor15 = color2;
+      //myPort.write(3);
+      //myPort.write(3);
+      //myPort.write(3);
+    }
+  } 
+  if(active == true){
+    if(rectOver6){
+    if(garra == false){
+      garra = true;
+      rectColor16 = color2;
+      //myPort.write(4);
+      //myPort.write(4);
+      println(4);
+    }else{
+      garra = false;
+      rectColor16 = color1;
+      //myPort.write(4);
+      //myPort.write(4);
+      println(4);
+    }
+    }
+    if(rectOver7){
+      if(val1<150){
+        val1+=10;
+        //myPort.write(val1);
+        println(val1);
+      }else{
+        //myPort.write(val1);
+        println(val1);
+      }
+    }if(rectOver8){
+      if(val1>11){
+        val1-=10;
+        //myPort.write(val1);
+        println(val1);
+      }else{
+        //myPort.write(val1);
+        println(val1);
+      }
+    }if(rectOver9){
+      if(val2<41){
+        val2+=10;
+        //myPort.write(val2);
+        println(val2);
+      }else{
+        //myPort.write(val2);
+        println(val2);
+      }
+    }if(rectOver10){
+      if(val2>10){
+        val2-=10;
+        //myPort.write(val2);
+        println(val2);
+      }else{
+        //myPort.write(val2);
+        println(val2);
+      }
+    }
+  }
+}
+
+boolean overRect(int x, int y, int width, int height)  {
+  if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void serialEvent(Serial myPort){
+ //in_data = myPort.read(); 
+}
